@@ -1,5 +1,7 @@
 #lang nanopass
 
+(provide (all-defined-out))
+
 (define fun-count 0)
 
 (define (variable? x) (and (symbol? x) (not (primitive? x)) (not (constant? x))))
@@ -52,16 +54,24 @@
 (define-language L11
   (extends L10)
   (Expr (e body)
-        (- (lambda ([x t]) body))
-        (+ (lambda ([x* t*]) body))))
+        (- (lambda ([x t]) body)
+           (e0 e1))
+        (+ (lambda ([x* t*] ...) body)
+           (e e* ...))))
 
 (define-parser parser-L11 L11)
+
+(define (lambda? e) #t)
+(define (saca-cosas e) '(((x y z) (Int Int Int)) x))
 
 (define-pass uncurry : L10 (ir) -> L11 ()
   (Expr : Expr (e) -> Expr ()
         [(lambda ([,x ,t]) ,[body])
          (if (lambda? body)
              (let* ([asignaciones (car (saca-cosas body))]
-                    [puerquito (cdr (saca-cosas body))])
-               `(lambda ,(list-append [x t] asignaciones) ,puerquito))
-             `(lambda ([,x ,t]) ,body))]))
+                    [puerquito (cadr (saca-cosas body))])
+               `(lambda ([,(cons x (car asignaciones))
+                          ,(cons t (cadr asignaciones))] ...)
+                  ,puerquito))
+             `(lambda ([,x ,t]) ,body))]
+        [(,[e0] ,[e1]) `(,e0 ,(list e1) ...)]))
