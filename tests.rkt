@@ -12,7 +12,7 @@
 (define e4 `(lambda ([a Int]) (lambda ([b Int]) ((,e2 a) (,e1 b)))))
 
 ;; Expresiones esperadas, todas conforme a L11
-(define r1 `(lambda ([x Int] (primapp * x x))))
+(define r1 `(lambda ([x Int]) (primapp * x x)))
 (define r2 `(lambda ([x Int] [y Int]) (primapp + x y x)))
 (define r3 `(lambda ([a Int] [b Int] [x Int] [y Int]) (primapp + x y x)))
 (define r4 `(lambda ([a Int] [b Int]) (,r2 a (,r1 b))))

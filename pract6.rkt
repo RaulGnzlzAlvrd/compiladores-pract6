@@ -61,17 +61,24 @@
 
 (define-parser parser-L11 L11)
 
-(define (lambda? e) #t)
-(define (saca-cosas e) '(((x y z) (Int Int Int)) x))
+(define (lambda? expr)
+  (nanopass-case (L11 Expr) expr
+                 [(lambda ([,x* ,t*] ...) ,body) #t]
+                 [else #f]))
+
+(define (saca-cosas expr)
+  (nanopass-case (L11 Expr) expr
+                 [(lambda ([,x* ,t*] ...) ,body) `((,x* ,t*) ,body)]
+                 [else #f]))
 
 (define-pass uncurry : L10 (ir) -> L11 ()
   (Expr : Expr (e) -> Expr ()
         [(lambda ([,x ,t]) ,[body])
          (if (lambda? body)
-             (let* ([asignaciones (car (saca-cosas body))]
-                    [puerquito (cadr (saca-cosas body))])
+             (let* ([procesado (saca-cosas body)]
+                    [asignaciones (car procesado)])
                `(lambda ([,(cons x (car asignaciones))
                           ,(cons t (cadr asignaciones))] ...)
-                  ,puerquito))
+                  ,(cadr procesado)))
              `(lambda ([,x ,t]) ,body))]
         [(,[e0] ,[e1]) `(,e0 ,(list e1) ...)]))
