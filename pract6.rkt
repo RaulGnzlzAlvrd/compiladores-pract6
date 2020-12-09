@@ -71,6 +71,16 @@
                  [(lambda ([,x* ,t*] ...) ,body) `((,x* ,t*) ,body)]
                  [else #f]))
 
+(define (application? expr)
+  (nanopass-case (L11 Expr) expr
+                 [(,e ,e* ...) #t]
+                 [else #f]))
+
+(define (application->list expr)
+  (nanopass-case (L11 Expr) expr
+                 [(,e ,e* ...) (cons e e*)]
+                 [else #f]))
+
 (define-pass uncurry : L10 (ir) -> L11 ()
   (Expr : Expr (e) -> Expr ()
         [(lambda ([,x ,t]) ,[body])
@@ -81,4 +91,8 @@
                           ,(cons t (cadr asignaciones))] ...)
                   ,(cadr procesado)))
              `(lambda ([,x ,t]) ,body))]
-        [(,[e0] ,[e1]) `(,e0 ,(list e1) ...)]))
+        [(,[e0] ,[e1])
+         (if (application? e0)
+             (let ([aplicaciones (application->list e0)])          
+               `(,(car aplicaciones) ,(append (cdr aplicaciones) (list e1)) ...))
+             `(,e0 ,(list e1) ...))]))
