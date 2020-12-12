@@ -86,7 +86,7 @@
 ;;
 ;; Ejercicio 2: symbol-table-var
 ;;
-;; Calcula la tabla de símbolos de expr
+;; Calcula la tabla de símbolos de expr.
 ;; Se consideran todas las sub-expresiones que puedan contener
 ;; algún let/letrec/letfun. Por lo tanto se aplica recursión
 ;; sobre los values de las asignaciones en los lets, el cuerpo
