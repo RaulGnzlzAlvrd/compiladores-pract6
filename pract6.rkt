@@ -82,3 +82,47 @@
                           ,(cons t (cadr asignaciones))] ...)
                   ,(cadr procesado)))
              `(lambda ([,x ,t]) ,body))]))
+
+;;
+;; Ejercicio 2: symbol-table-var
+;;
+;; Calcula la tabla de símbolos de expr
+;; Se consideran todas las sub-expresiones que puedan contener
+;; algún let/letrec/letfun. Por lo tanto se aplica recursión
+;; sobre los values de las asignaciones en los lets, el cuerpo
+;; de las lambdas y todos los elementos en las listas (ver los
+;; tests para ver ejemplos).
+;;
+;; symbol-table-var : L11 -> HashTable
+(define (symbol-table-var expr)
+  (let ([table (make-hash)])
+    (symbol-table-var-aux expr table)
+    table))
+
+;; Aplica la función symbol-table-var-aux a la lista de expresiones l
+;;
+;; apply-to-list : (listof L11) HashTable -> void
+(define (apply-to-list l table)
+  (map (lambda (x) (symbol-table-var-aux x table)) l))
+
+;; Función auxiliar para calcular la tabla de símbolos
+;;
+;; symbol-table-var-aux : L11 HashTable -> void
+(define (symbol-table-var-aux expr table)
+  (nanopass-case (L11 Expr) expr
+                 [(let ([,x ,t ,e]) ,body)
+                  (begin (hash-set! table x (cons t e))
+                         (apply-to-list (list e body) table))]
+                 [(letrec ([,x ,t ,e]) ,body)
+                  (begin (hash-set! table x (cons t e))
+                         (apply-to-list (list e body) table))]
+                 [(letfun ([,x ,t ,e]) ,body)
+                  (begin (hash-set! table x (cons t e))
+                         (apply-to-list (list e body) table))]
+                 [(begin ,e* ... ,e) (apply-to-list (cons e e*) table)]
+                 [(primapp ,pr ,e* ...) (apply-to-list e* table)]
+                 [(if ,e1 ,e2 ,e3) (apply-to-list (list e1 e2 e3) table)]
+                 [(,e0 ,e1) (apply-to-list (list e0 e1) table)]
+                 [(list ,e* ...) (apply-to-list e* table)]
+                 [(lambda ([,x* ,t*] ...) ,body) (symbol-table-var-aux body table)]
+                 [else table]))
