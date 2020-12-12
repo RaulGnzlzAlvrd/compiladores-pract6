@@ -18,8 +18,8 @@
 (define r2 `(lambda ([x Int] [y Int]) (primapp + x y x)))
 (define r3 `(lambda ([a Int] [b Int] [x Int] [y Int]) (primapp + x y x)))
 (define r4 `(foo x))
-(define r5 `(foo x y z))
-(define r6 `(lambda ([a Int] [b Int]) (,r2 a (,r1 b))))
+(define r5 `(((foo x) y) z))
+(define r6 `(lambda ([a Int] [b Int]) ((,r2 a) (,r1 b))))
 
 (define (verify-uncurry query expected)
   (check-equal? (uncurry (parser-L10 query))
