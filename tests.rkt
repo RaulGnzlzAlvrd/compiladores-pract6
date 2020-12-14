@@ -60,3 +60,30 @@
 (foldl (lambda (q e flag) (and flag (verify-symbol-table-var q e))) #t
        (list e7 e8 e9)
        (list r7 r8 r9))
+
+;;
+;; Ejercicio 2: assigment
+;;
+
+;; Expresiones query, todas conforme a L11
+(define e10 `(let ([x Int (const Int 5)]) (primapp * x x)))
+(define e11 `(letrec ([x Int y]) (primapp + x y x)))
+(define e12 `(letfun ([a Int e1]) (primapp + x y x)))
+(define e13 `(foo x))
+(define e14 `(((foo x) y) z))
+
+;; Expresiones esperadas, todas conforme a L12
+(define r10 `(let ([x]) (primapp * x x)))
+(define r11 `(letrec ([x]) (primapp + x y x)))
+(define r12 `(letfun ([a]) (primapp + x y x)))
+(define r13 `(foo x))
+(define r14 `(((foo x) y) z))
+
+;; Se usan los r10...r14
+(define (verify-assigment query expected)
+  (check-equal? (assigment (parser-L11 query))
+                (parser-L12 expected)))
+
+(foldl (lambda (q e flag) (and flag (verify-assigment q e))) #t
+       (list e10 e11 e12 e13 e14)
+       (list r10 r11 r12 r13 r14))

@@ -126,3 +126,27 @@
                  [(list ,e* ...) (apply-to-list e* table)]
                  [(lambda ([,x* ,t*] ...) ,body) (symbol-table-var-aux body table)]
                  [else table]))
+
+;;
+;; Ejercicio 3: assigment
+;;
+(define-language L12
+  (extends L10)
+  (Expr (e body)
+        (- (let ([x t e]) body))
+        (- (letrec ([x t e]) body))
+        (- (letfun ([x t e]) body))
+        (+ (let ([x]) body))
+        (+ (letrec ([x]) body))
+        (+ (letfun ([x]) body))))
+
+(define-pass assigment : L11 (ir) -> L12 ()
+  (Expr : Expr (e) -> Expr ()
+        [(let ([,x ,t ,e]) ,[body])
+         `(let ([,x]) ,body)]
+        [(letrec ([,x ,t ,e]) ,[body])
+         `(letrec ([,x]) ,body)]
+        [(letfun ([,x ,t ,e]) ,[body])
+         `(letfun ([,x]) ,body)]))
+
+(define-parser parser-L12 L12)
